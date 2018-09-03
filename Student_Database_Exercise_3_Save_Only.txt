@@ -1,0 +1,158 @@
+
+#include "stdafx.h"
+#include <iostream>
+#include <string> 
+#include <fstream> //For FILE IO
+
+#include <shlobj.h> //Imports windows libary to get current users path to the desktop
+
+using namespace std;
+
+class Students {
+public:
+
+	string firstName;
+	string lastName;
+	string grade;
+
+};
+
+Students *studentArray;
+
+bool isNumbers(string input) {
+	int grade = 0;
+
+	try {
+		grade = stoi(input); // Convert String to int
+		if (grade < 0 || grade > 12) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	} catch (exception e) {
+		return false;
+	}
+}
+
+void printDirections() {
+
+	cout << "Welcome to Student Database V1\n";
+	cout << "Coded By Tyler Davis\n";
+
+}
+
+void createStudent(int counter) {
+
+	string questions[] = { "Please enter the new student's first name.","Please enter the new student's last name.","Please enter the new student's grade." };
+	string grade = "";
+	cout << questions[0] << endl;
+	cin >> studentArray[counter].firstName;
+	cout << questions[1] << endl;
+	cin >> studentArray[counter].lastName;
+	cout << questions[2] << endl;
+	cin >> grade;
+
+	while (!isNumbers(grade)) {
+		cout << "You have entered an invalid grade 0 - 12.\n";
+		cout << questions[2] << endl;
+		cin >> grade;
+	}
+	studentArray[counter].grade = grade;
+}
+
+int getStudentCount() {
+	int amtStud = 0;
+
+	cout << "How many students would you like to add?\n";
+	cin >> amtStud;
+	while (amtStud < 1 || cin.fail()) {
+		cout << "You have entered an invalid character.\n";
+		cout << "How many students would you like to add?\n";
+		cin.clear(); //reset cin
+		cin.ignore(INT_MAX, '\n'); //reset cin
+		cin >> amtStud;
+	}
+	return amtStud;
+}
+
+void printResults(int arrSize) {
+	cout << endl;
+	cout << "You have chose to end, you have added the following students.\n";
+	for (int i = 0; i < arrSize; i++) {
+		cout << endl;
+		cout << "Firstname : " << studentArray[i].firstName << ", " << "Lastname : "
+			<< studentArray[i].lastName << ", " << "Grade : " << studentArray[i].grade << ".\n";
+	}
+	cout << endl;
+}
+
+LPSTR desktop_directory()
+{
+	static char path[MAX_PATH + 1];
+	if (SHGetSpecialFolderPathA(HWND_DESKTOP, path, CSIDL_DESKTOPDIRECTORY, FALSE)) {
+		return path;
+	} else {
+		return NULL;
+	}
+}
+
+void saveFile(int amtStudents) {
+
+	int userInput = 0;
+	string nameOfFile = "";
+	string getDesktopDirectory = "";
+	string finalPath = "";
+	ofstream myFile;
+
+	getDesktopDirectory = desktop_directory();
+
+	cout << "Would you like to save the file? Press 1 for Yes | Press 2 for No.\n";
+	cin >> userInput;
+	while (userInput != 1 && userInput != 2) {
+		cout << "Invalid Choice\n";
+		cout << "Would you like to save the file? Press 1 for Yes | Press 2 for No.\n";
+		cin >> userInput;
+	}
+	if (userInput == 1) {
+		cout << "What would you like to name the file?\n";
+		cin >> nameOfFile;
+		finalPath = getDesktopDirectory + "\\" + nameOfFile + ".txt";
+		myFile.open(finalPath);
+		for (int i = 0; i < amtStudents; i++) {
+			myFile << studentArray[i].firstName + " " << studentArray[i].lastName + " " << studentArray[i].grade + " " << endl;
+		}
+		myFile.close();
+
+	} else if (userInput == 2) {
+		cout << "Thank you for using!\n";
+	} else {
+		cout << "There is an error in the save feature.\n";
+	}
+}
+
+void startStudentDB() {
+	int returnedInput = 0;
+	int amtStudents = 0;
+	int counter = 0;
+	int arraySize = 0;
+	string savedFilePath = "";
+
+	printDirections();
+	amtStudents = getStudentCount();
+	studentArray = new Students[amtStudents];
+
+	while (counter != amtStudents) {
+		createStudent(counter);
+		counter++;
+	}
+	printResults(amtStudents);
+    saveFile(amtStudents);
+}
+
+int main()
+{
+	startStudentDB();
+	return 0;
+}
+
